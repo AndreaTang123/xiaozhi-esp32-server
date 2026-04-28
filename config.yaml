@@ -1,0 +1,143 @@
+# 0. Disable management dashboard
+manager_api:
+  enabled: false
+standalone_mode: true
+
+# 1. System & Logging
+delete_audio: false
+temp_dir: "./temp"
+log:
+  log_level: "INFO"
+  log_dir: "./data"
+  log_file: "app.log"
+  data_dir: "data"
+
+# 3. Module Selection
+selected_module:
+  VAD: "silero"
+  ASR: "fun_local"
+  TTS: "edge"
+  LLM: "openai"
+  Intent: "nointent_mode"
+
+# 3. VAD Settings
+VAD:
+  silero:
+    type: "silero"
+    model_dir: "./models/snakers4_silero-vad"
+    threshold: 0.5
+
+# 4. ASR Settings
+ASR:
+  # Default (English)
+  fun_local:
+    type: "fun_local"
+    device: "cpu"
+    model_dir: "iic/speech_paraformer_asr-en-16k-vocab4199-pytorch"
+    output_dir: "./temp/asr_output"
+
+  # Explicit English Option
+  fun_local_en:
+    type: "fun_local"
+    device: "cpu"
+    model_dir: "iic/speech_paraformer_asr-en-16k-vocab4199-pytorch"
+    output_dir: "./temp/asr_output"
+
+  # Multilingual Option (SenseVoiceSmall - Likely the previous default)
+  fun_local_multilingual:
+    type: "fun_local"
+    device: "cpu"
+    model_dir: "iic/SenseVoiceSmall"
+    output_dir: "./temp/asr_output"
+
+# 5. LLM Settings
+LLM:
+  openai:
+    type: "openai"
+    base_url: "http://localhost:11434/v1"
+    api_key: "ollama"
+    model_name: "minimax-m2:cloud"
+    timeout: 30
+    num_ctx: 32768 # Increased for 16GB RAM: enables processing longer news timelines and history
+    temperature: 0.5 # Controls randomness (0.0 to 2.0). Default is 1.0. Lower is more deterministic.
+
+  fast_intent:
+    type: "openai"
+    base_url: "http://localhost:11434/v1"
+    api_key: "ollama"
+    model_name: "qwen2.5:3b"
+    timeout: 2 # Strict timeout for intent classification
+    max_retries: 0
+
+# 6. TTS Settings
+TTS:
+  edge:
+    type: "edge"
+    voice: "en-US-JennyNeural"
+
+# 7. Prompt Settings (MOVED TO TOP LEVEL)
+prompt: "Provide short and concise responses, unless asked to elaborate."
+
+# 8. Server Settings
+server:
+  port: 8000
+  http_port: 8003
+  host: "0.0.0.0"
+  timezone_offset: -5
+  websocket: "ws://192.168.86.112:8000/xiaozhi/v1/"
+
+# 9. Audio Settings
+audio:
+  format: "opus"
+  sample_rate: 16000
+  channels: 1
+  frame_duration: 60
+
+# 10. XiaoZhi Device Handshake Settings
+xiaozhi:
+  version: 1
+  auth_key: "8d3193a0-e8e1-4af9-ae9e-1c6f72623580"
+  message: "Ready"
+  llm_handshake: true
+  mcp_enabled: true
+
+# 11. Intent Settings
+Intent:
+  nointent_mode:
+    type: "nointent"
+  llm:
+    type: "intent_llm"
+    llm: "fast_intent"
+    functions:
+      - "get_weather"
+      - "get_location"
+      - "say_goodbye"
+      - "self_get_device_status"
+      - "self_audio_speaker_set_volume"
+      - "self_screen_set_brightness"
+      - "self_screen_set_theme"
+
+wakeup_words:
+  - "Are you there?"
+  - "Hello Janet"
+
+exit_commands:
+  - "exit"
+  - "stop"
+  - "goodbye"
+  - "shutup"
+
+exit_replies:
+  - "Goodbye!"
+  - "See you later!"
+  - "Take care!"
+  - "Bye for now!"
+  - "Catch you later!"
+
+plugins:
+  get_weather:
+    default_location: "Chapel Hill"
+    unit_system: "imperial" # Options: "metric" (default), "imperial"
+
+  web_search:
+    count: 3
